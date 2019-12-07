@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config()
 
 const server = express();
 
@@ -72,4 +73,4 @@ server.delete("/cards/:id", checkCard, (req, res) =>{
     res.json(cards);
 });
 
-server.listen(3333);
+server.listen(process.env.PORT);
