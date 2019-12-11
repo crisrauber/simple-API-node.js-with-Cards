@@ -1,4 +1,5 @@
 const express = require('express');
+const database = require('./database');
 require('dotenv').config()
 
 const server = express();
@@ -12,6 +13,14 @@ server.use((req, res, next) =>{
     next(); 
 });
 
+async function  lastId(req, res, next) {
+    await database.query(`SELECT MAX(id) AS id FROM cards`, { type: database.QueryTypes.SELECT } )
+    .then(results => {
+        nextId = results[0].id;
+    });
+    next();
+};
+
 function checkCard(req, res, next){
     const {id} = req.params;
     const card = cards.find(card => card.id == id);
@@ -22,19 +31,24 @@ function checkCard(req, res, next){
     next();
 };
 
-let nextId = 1;
-const cards = [];
+let nextId = 0;
+let cards = [];
 
 //ROUTES
 server.get("/",(req, res) => {
   return  res.json({result: "simple-API-NODE.JS-WITH-CARDS"});
 });
 
-server.get("/cards", (req, res) =>{
+server.get("/cards", async (req, res) =>{
+   await database.query(`SELECT * FROM cards`, { type: database.QueryTypes.SELECT })
+    .then(results => {
+        cards = results;
+    });
     return res.json(cards);
 });
 
-server.post("/cards", (req, res) =>{
+server.post("/cards", lastId, (req, res) =>{
+    nextId ++
     const {title, content} = req.body;
     const card = {
         id: nextId,
@@ -42,9 +56,13 @@ server.post("/cards", (req, res) =>{
         content
     };
 
-    cards.push(card);
+    database.query(`INSERT INTO cards VALUES (${nextId},'${title}','${content}');`, 
+        { type: database.QueryTypes.INSERT } )
+    .then(results => {
+        console.log(results)
+    });
 
-    nextId ++;
+    cards.push(card);
 
     return res.json(card);
 });
