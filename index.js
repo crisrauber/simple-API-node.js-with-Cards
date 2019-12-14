@@ -57,7 +57,7 @@ server.get("/cards/:id", async (req, res) =>{
  });
  
 
-server.post("/cards", lastId, (req, res) =>{
+server.post("/cards" , lastId, async (req, res) =>{
     nextId ++
     const {title, content} = req.body;
     const card = {
@@ -66,7 +66,7 @@ server.post("/cards", lastId, (req, res) =>{
         content
     };
 
-    database.query(`INSERT INTO cards VALUES (${nextId},'${title}','${content}');`, 
+    await database.query(`INSERT INTO cards VALUES (${nextId},'${title}','${content}');`, 
         { type: database.QueryTypes.INSERT } )
     .then(results => {
     });
@@ -76,12 +76,12 @@ server.post("/cards", lastId, (req, res) =>{
     return res.json(card);
 });
 
-server.put("/cards/:id", checkCard, (req, res) =>{
+server.put("/cards/:id", checkCard, async (req, res) =>{
     const {id} = req.params;
     const {title, content} = req.body;
 
     if(title && content){
-        database.query(`UPDATE cards SET title='${title}', content='${content}' WHERE id=${id};`, 
+       await database.query(`UPDATE cards SET title='${title}', content='${content}' WHERE id=${id};`, 
         { type: database.QueryTypes.UPDATE } )
         .then(results => {
     });
@@ -90,10 +90,10 @@ server.put("/cards/:id", checkCard, (req, res) =>{
     return res.json(card);
 });
 
-server.delete("/cards/:id", checkCard, (req, res) =>{
+server.delete("/cards/:id", checkCard, async (req, res) =>{
     const {id} = req.params;
 
-    database.query(`DELETE FROM cards WHERE id = ${id};`, 
+   await database.query(`DELETE FROM cards WHERE id = ${id};`, 
         { type: database.QueryTypes.INSERT } )
     .then(results => {
         console.log(results)
