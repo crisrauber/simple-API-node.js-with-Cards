@@ -47,6 +47,16 @@ server.get("/cards", async (req, res) =>{
     return res.json(cards);
 });
 
+server.get("/cards/:id", async (req, res) =>{
+    const {id} = req.params;
+    await database.query(`SELECT * FROM cards WHERE id = ${id}`, { type: database.QueryTypes.SELECT })
+     .then(results => {
+         cards = results;
+     });
+     return res.json(cards);
+ });
+ 
+
 server.post("/cards", lastId, (req, res) =>{
     nextId ++
     const {title, content} = req.body;
@@ -59,7 +69,6 @@ server.post("/cards", lastId, (req, res) =>{
     database.query(`INSERT INTO cards VALUES (${nextId},'${title}','${content}');`, 
         { type: database.QueryTypes.INSERT } )
     .then(results => {
-        console.log(results)
     });
 
     cards.push(card);
@@ -71,14 +80,11 @@ server.put("/cards/:id", checkCard, (req, res) =>{
     const {id} = req.params;
     const {title, content} = req.body;
 
-    const card = cards.find(card => card.id == id);
-
-    if(title){
-        card.title = title;
-    }
-
-    if(content){
-        card.content = content;
+    if(title && content){
+        database.query(`UPDATE cards SET title='${title}', content='${content}' WHERE id=${id};`, 
+        { type: database.QueryTypes.UPDATE } )
+        .then(results => {
+    });
     }
 
     return res.json(card);
@@ -86,8 +92,13 @@ server.put("/cards/:id", checkCard, (req, res) =>{
 
 server.delete("/cards/:id", checkCard, (req, res) =>{
     const {id} = req.params;
-    const cardIndex = cards.findIndex(card => card.id == id);
-    cards.splice(cardIndex, 1);
+
+    database.query(`DELETE FROM cards WHERE id = ${id};`, 
+        { type: database.QueryTypes.INSERT } )
+    .then(results => {
+        console.log(results)
+    });
+
     res.json(cards);
 });
 
